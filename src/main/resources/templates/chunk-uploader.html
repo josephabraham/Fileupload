@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Chunked File Upload</title>
+    <meta charset="UTF-8">
+    <script>
+        const chunkSize = 1024 * 1024 * 1; // 1MB
+        //const chunkSize = 1024  // 1MB;
+
+        async function uploadFile() {
+            const fileInput = document.getElementById("fileInput");
+            const file = fileInput.files[0];
+            if (!file) return alert("No file selected!");
+
+            const totalChunks = Math.ceil(file.size / chunkSize);
+
+            for (let i = 0; i < totalChunks; i++) {
+                const start = i * chunkSize;
+                const end = Math.min(start + chunkSize, file.size);
+                const chunk = file.slice(start, end);
+
+                const formData = new FormData();
+                formData.append("file", chunk);
+                formData.append("chunkIndex", i);
+                formData.append("totalChunks", totalChunks);
+                formData.append("fileName", file.name);
+
+                try {
+                    const response = await fetch("/chunk-upload", {
+                        method: "POST",
+                        body: formData
+                    });
+
+                    if (!response.ok) {
+                        throw new Error(`Chunk ${i} failed`);
+                    }
+
+                    console.log(`Chunk ${i + 1}/${totalChunks} uploaded`);
+                } catch (err) {
+                    console.error(err);
+                    alert("Upload failed!");
+                    return;
+                }
+            }
+
+            alert("Upload complete!");
+        }
+    </script>
+</head>
+<body>
+<h1>Chunked File Upload</h1>
+<input type="file" id="fileInput" />
+<button onclick="uploadFile()">Upload</button>
+</body>
+</html>

@@ -1,0 +1,10 @@
+spring:
+  application:
+    name: FileUpload-Multipart
+  servlet:
+    multipart:
+      max-file-size:  2GB
+      max-request-size: 2GB
+  jackson:
+    serialization:
+      fail-on-empty-beans: false
